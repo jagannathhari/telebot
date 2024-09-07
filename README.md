@@ -11,6 +11,6 @@ RATE_LIMIT_DELAY = 5  # Delay in seconds to avoid rate limiting
 
 # To run program
 ```console 
-    pip install -r requirements.txt
-    python app.py
+pip install -r requirements.txt
+python app.py
 ```
