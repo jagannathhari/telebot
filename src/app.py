@@ -26,8 +26,7 @@ async def filter_groups(client):
             chats = await get_all_chats(client)
             for chat in chats:
                 if chat.type in [ChatType.GROUP, ChatType.SUPERGROUP]:
-                    if chat.permissions.can_invite_users:
-                        groups.append((chat.id, chat.title))
+                    groups.append((chat.id, chat.title))
             break
         except FloodWait as e:
             wait_time = e.value
@@ -68,6 +67,7 @@ async def _process_batch(client, dest, members):
                 first_name = member.user.first_name or ""
                 last_name = member.user.last_name or ""
                 logger.info(f"Added user: {user_name}, Name: {first_name + last_name}")
+                await asyncio.sleep(5)
 
             except FloodWait as e:
                 logger.warning(f"Rate limit exceeded. Waiting for {e.value} seconds.")
@@ -97,24 +97,32 @@ async def main():
 
     async with client:
         groups = await filter_groups(client)
-        link = input("Enter public group link or username: ")
         for idx, group in enumerate(groups, start=1):
-            print(f"{idx}. {group[1]}")
+            print(idx,group[1])
 
-        while True:
-            destination = input("Select group you want to add: ")
-            if not destination.isnumeric():
-                print(f"Please enter a number between 1 and {len(groups)}")
+        link = input("Enter public group link or username or number: ")
+        users = None
+        if link.isnumeric():
+            idx = int(link)
+            if idx > len(groups):
+                print(f"Enter number between 1 and {len(groups)}")
             else:
-                destination = int(destination)
-                if destination > 0 and destination <= len(groups):
-                    src = get_username_from_link(link)
-                    to = groups[destination-1][0]
-                    await transfer_user(client, src,to)
-                    break
-                else:
-                    print(f"Please enter a number between 1 and {len(groups)}")
-
+                users = client.get_chat_members(groups[idx-1][0])
+                username = groups[idx-1][1]
+        else:
+            username = get_username_from_link(link)
+            users = client.get_chat_members(username)
+        if users:
+            with open(f"{username}.csv","w") as f:
+                print("Username","First name","Last name",sep=",",file=f)
+                async for user in users:
+                    print(
+                        getattr(user.user, 'first_name', ' '),
+                        getattr(user.user, 'last_name', ' '),
+                        getattr(user.user, 'username', ' '),
+                        file=f,
+                        sep=","
+                    )
 
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
