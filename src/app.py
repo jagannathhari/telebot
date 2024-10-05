@@ -5,10 +5,6 @@ import logging
 from pyrogram import Client
 import config
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-
 async def get_all_chats(client):
     chats = []
     try:
@@ -117,9 +113,9 @@ async def main():
                 print("Username","First name","Last name",sep=",",file=f)
                 async for user in users:
                     print(
+                        getattr(user.user, 'username', ' '),
                         getattr(user.user, 'first_name', ' '),
                         getattr(user.user, 'last_name', ' '),
-                        getattr(user.user, 'username', ' '),
                         file=f,
                         sep=","
                     )
