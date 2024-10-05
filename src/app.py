@@ -110,15 +110,17 @@ async def main():
             users = client.get_chat_members(username)
         if users:
             with open(f"{username}.csv","w") as f:
-                print("Username","First name","Last name",sep=",",file=f)
-                async for user in users:
-                    print(
-                        getattr(user.user, 'username', ' '),
-                        getattr(user.user, 'first_name', ' '),
-                        getattr(user.user, 'last_name', ' '),
-                        file=f,
-                        sep=","
-                    )
+                print("Full Name","Username","Id",sep=",",file=f)
+                async for user_info in users:
+                    user = user_info.user
+                    username   = user.username
+                    first_name = user.first_name or ""
+                    last_name  = user.last_name or ""
+                    full_name  = f"{first_name} {last_name}"
+                    id         = user.id
+                    cols = f"{full_name} ,{username},{id}"
+                    print(cols,file=f)
+                    print("Added: ",cols,end="\r")
 
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
