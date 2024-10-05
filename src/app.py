@@ -62,7 +62,7 @@ async def main():
             username = get_username_from_link(link)
             users = client.get_chat_members(username)
         if users:
-            with open(f"{username}.csv","w") as f:
+            with open(f"{username}.csv","w",encoding='utf-8', errors='replace') as f:
                 print("Full Name","Username","Id",sep=",",file=f)
                 async for user_info in users:
                     user = user_info.user
