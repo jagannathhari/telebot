@@ -13,6 +13,15 @@ async def get_all_chats(client):
         print(f"An error occurred while getting chats: {e}")
     return chats
 
+def get_users_to_ban():
+    while True:
+        f = input("Enter file path(which contains users to ban).: ")
+        if os.path.isfile(f):
+            with open(f) as users:
+                return [user.strip() for user in users.readlines()]
+        else:
+            print("Not a valid path.. please renter the path.")
+
 
 async def filter_groups(client):
     groups = []
@@ -44,6 +53,13 @@ async def main():
     phone_number = config.PHONE_NUMBER
     client = Client("session", api_id, api_hash, phone_number=phone_number)
 
+    while True:
+        response = input("Enter 1 to ban user, 2 to scrape user: ")
+        if response not in ("1","2"):
+            print(f"{response} is not a valid option. Choose 1 or 2")
+        else:
+            break
+
     async with client:
         groups = await filter_groups(client)
         for idx, group in enumerate(groups, start=1):
@@ -60,7 +76,16 @@ async def main():
                 username = groups[idx-1][1]
         else:
             username = get_username_from_link(link)
-            users = client.get_chat_members(username)
+            if response != 1:
+                users = client.get_chat_members(username)
+            else:
+                users = None
+    if response == 1:
+        users_to_ban = get_users_to_ban()
+        for user in users_to_ban:
+            await client.ban_chat_member(username, user)
+       	    print("Banned user", user)
+
         if users:
             with open(f"{username}.csv","w",encoding='utf-8', errors='replace') as f:
                 print("Full Name","Username","Id",sep=",",file=f)
